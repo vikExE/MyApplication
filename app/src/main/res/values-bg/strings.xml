@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">My Events</string>
+    <string name="upcoming_title">Предстоящи събития</string>
+    <string name="upcoming_button">ПРЕДСТОЯЩИ</string>
+    <string name="add_button">ДОБАВИ</string>
+    <string name="past_button">МИНАЛИ</string>
 </resources>

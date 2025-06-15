@@ -53,9 +53,9 @@ import java.util.Locale
 class MainActivity : ComponentActivity() {
 
     sealed class Screen(val route: String, @StringRes val resourceId: Int, val icon: Int) {
-        data object Active : Screen("Active", R.string.app_name, R.drawable.ic_launcher_foreground)
-        data object Upcoming : Screen("Upcoming", R.string.app_name, R.drawable.ic_launcher_foreground)
-        data object Past : Screen("Past", R.string.app_name, R.drawable.ic_launcher_foreground)
+        data object Active : Screen("Active", R.string.upcoming_button, R.drawable.ic_launcher_foreground)
+        data object Upcoming : Screen("Upcoming", R.string.add_button, R.drawable.ic_launcher_foreground)
+        data object Past : Screen("Past", R.string.past_button, R.drawable.ic_launcher_foreground)
     }
 
 
@@ -153,7 +153,9 @@ fun ActiveScreen() {
       horizontalAlignment = Alignment.CenterHorizontally,
       verticalArrangement = Arrangement.Top
   ) {
-      Text("Upcoming events")
+      Text(
+          stringResource(R.string.upcoming_title)
+      )
       val activeItemsList = remember {
           listOf(
               ActiveItem("1", "Item 1", Date(), Date(), "Address 1", "Description 1"),
