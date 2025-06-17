@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -70,6 +71,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.error
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -271,15 +273,15 @@ fun ActiveListItem(item: ActiveItem) {
                 if (item.imageUrl != null) {
                     AsyncImage(
                         model = ImageRequest.Builder(LocalContext.current)
-                            .data(item.imageUrl) // The download URL
+                            .data(item.imageUrl)
                             .crossfade(true)
-                            .placeholder(R.drawable.mountains) // Your placeholder drawable
-                            .error(R.drawable.mountains)       // Your error drawable
+                            .placeholder(R.drawable.mountains)
+                            .error(R.drawable.mountains)
                             .build(),
                         contentDescription = "Active Item Image",
                         modifier = Modifier
                             .sizeIn(maxWidth = 160.dp, maxHeight = 120.dp)
-                            .clip(RoundedCornerShape(8.dp)), // Added clip for rounded corners
+                            .clip(RoundedCornerShape(8.dp)),
                         contentScale = ContentScale.Crop
                     )
                 } else {
@@ -349,7 +351,7 @@ suspend fun uploadImageToImgBB(context: android.content.Context, imageUri: Uri):
                 // Image part
                 outputStream.writeBytes(twoHyphens + boundary + lineEnd)
                 outputStream.writeBytes("Content-Disposition: form-data; name=\"image\"; filename=\"${imageUri.lastPathSegment}\"$lineEnd")
-                outputStream.writeBytes("Content-Type: image/jpeg$lineEnd") // Adjust content type if needed
+                outputStream.writeBytes("Content-Type: image/jpeg$lineEnd")
                 outputStream.writeBytes(lineEnd)
                 outputStream.write(imageBytes)
                 outputStream.writeBytes(lineEnd)
@@ -374,7 +376,7 @@ suspend fun uploadImageToImgBB(context: android.content.Context, imageUri: Uri):
                 }
             } else {
                 Log.e("ImgBBUpload", "HTTP Error: ${connection.responseCode} ${connection.responseMessage}")
-                // You might want to read the error stream here for more details
+
                 val errorStream = connection.errorStream
                 if (errorStream != null) {
                     val reader = BufferedReader(InputStreamReader(errorStream))
@@ -411,7 +413,7 @@ fun UpcomingScreen(mainViewModel: MainViewModel) {
     var endDateMillis by rememberSaveable { mutableStateOf<Long?>(null) }
 
     val coroutineScope = rememberCoroutineScope()
-    var isUploading by remember { mutableStateOf(false) } // To show a loading indicator
+    var isUploading by remember { mutableStateOf(false) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -472,9 +474,11 @@ fun UpcomingScreen(mainViewModel: MainViewModel) {
             readOnly = true,
             trailingIcon = {
                 Icon(
-                    painterResource(id = R.drawable.add_ev), // Replace with your calendar icon
+                    painterResource(id = R.drawable.start_date),
                     contentDescription = "Select Start Date",
-                    modifier = Modifier.clickable { showStartDatePicker = true }
+                    modifier = Modifier
+                        .clickable { showStartDatePicker = true }
+                        .width(180.dp)
                 )
             }
         )
@@ -510,9 +514,11 @@ fun UpcomingScreen(mainViewModel: MainViewModel) {
             readOnly = true,
             trailingIcon = {
                 Icon(
-                    painterResource(id = R.drawable.add_ev), // Replace with your calendar icon
+                    painterResource(id = R.drawable.end_date),
                     contentDescription = "Select End Date",
-                    modifier = Modifier.clickable { showEndDatePicker = true }
+                    modifier = Modifier
+                        .clickable { showEndDatePicker = true }
+                        .width(180.dp)
                 )
             }
         )
@@ -552,8 +558,9 @@ fun UpcomingScreen(mainViewModel: MainViewModel) {
                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
                 )
             },
-            modifier = Modifier.fillMaxWidth()
-        ) {
+            modifier = Modifier.fillMaxWidth(),
+        )
+            {
             Text("Select Image")
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -564,8 +571,8 @@ fun UpcomingScreen(mainViewModel: MainViewModel) {
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(uri)
                     .crossfade(true)
-                    .placeholder(R.drawable.mountains) // Replace with your placeholder
-                    .error(R.drawable.mountains)       // Replace with your error drawable
+                    .placeholder(R.drawable.mountains)
+                    .error(R.drawable.mountains)
                     .build(),
                 contentDescription = "Selected image",
                 modifier = Modifier
@@ -579,7 +586,7 @@ fun UpcomingScreen(mainViewModel: MainViewModel) {
         // Save Event Button
         Button(
             onClick = {
-                // Validate inputs (basic example)
+                // Validate inputs
                 if (title.isBlank() || address.isBlank() || startDateMillis == null || endDateMillis == null) {
                     Toast.makeText(context, "Please fill all fields and select dates.", Toast.LENGTH_LONG).show()
                     return@Button
@@ -589,35 +596,35 @@ fun UpcomingScreen(mainViewModel: MainViewModel) {
                     return@Button
                 }
 
-                isUploading = true // Show loading indicator
+                isUploading = true
 
                 coroutineScope.launch {
                     var imageUrl: String? = null
                     if (selectedImageUri != null) {
                         imageUrl = uploadImageToImgBB(context, selectedImageUri!!)
                         if (imageUrl == null) {
-                            // Handle upload failure (e.g., show a toast)
+
                             Toast.makeText(context, "Image upload failed. Try again.", Toast.LENGTH_LONG).show()
                             isUploading = false
-                            return@launch // Stop further execution if image upload is critical and failed
+                            return@launch
                         }
                     }
 
-                    // Create the event item with the (possibly null) imageUrl
+
                     val newEvent = ActiveItem(
-                        // id will be generated in ActiveItem or by your data source
+
                         title = title,
                         address = address,
                         description = description,
                         startDate = startDateMillis!!,
                         endDate = endDateMillis!!,
-                        imageUrl = imageUrl // This will be the ImgBB URL or null
+                        imageUrl = imageUrl
                     )
-                    mainViewModel.addItem(newEvent) // Add to ViewModel
+                    mainViewModel.addItem(newEvent)
 
-                    isUploading = false // Hide loading indicator
+                    isUploading = false
 
-                    // Optionally, navigate back or clear fields
+
                     Toast.makeText(context, "Event Saved!", Toast.LENGTH_SHORT).show()
                     title = ""
                     address = ""
@@ -625,11 +632,11 @@ fun UpcomingScreen(mainViewModel: MainViewModel) {
                     selectedImageUri = null
                     startDateMillis = null
                     endDateMillis = null
-                    // Consider navigating to another screen after saving
+
                 }
             },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !isUploading // Disable button while uploading
+            enabled = !isUploading
         ) {
             if (isUploading) {
                 CircularProgressIndicator(
